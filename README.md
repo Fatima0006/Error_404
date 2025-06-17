@@ -24,7 +24,7 @@ pip install django
 
 # Corre el programa
 
-python main.py
+python manage.py runserver
 
 
 Esto es un pre-view 
