@@ -6,7 +6,7 @@ Gogo estuvo aqui.
 
 - Python 3.12 (o la versión que uses)
 - pip
-
+-django 5.2.3
 ## Cómo correr este proyecto
 
 ```bash
