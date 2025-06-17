@@ -1,0 +1,33 @@
+# Ignorar entornos virtuales
+venv/
+.venv/
+
+# Archivos de Python compilados
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Archivos de entorno
+.env
+*.env
+
+# Archivos de configuración del IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de log y caché
+*.log
+*.pot
+*.pyc
+
+    
+
+# Archivos de migraciones de Django (opcional si generas muchas pruebas)
+*/migrations/__pycache__/
+*/migrations/*.pyc
