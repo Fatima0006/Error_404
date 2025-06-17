@@ -20,8 +20,10 @@ source venv/bin/activate   # En Windows: venv\Scripts\activate
 
 # Instala dependencias
 pip install -r requirements.txt
+pip install django
 
 # Corre el programa
+
 python main.py
 
 
