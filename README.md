@@ -14,12 +14,14 @@ Gogo estuvo aqui.
 git clone https://github.com/Fatima0006/Error_404.git
 cd Error 404
 
+borra el entorno virtual de la carpeta de error404 y luego inicia el siguente paso 
+
 # Crea entorno virtual
 python -m venv venv
 source venv/bin/activate   # En Windows: venv\Scripts\activate
 
 # Instala dependencias
-pip install -r requirements.txt
+pip install -r requirements.txt -- paso pendiente ( pasa al siguente)
 pip install django
 
 # Corre el programa
