@@ -31,3 +31,7 @@ Thumbs.db
 # Archivos de migraciones de Django (opcional si generas muchas pruebas)
 */migrations/__pycache__/
 */migrations/*.pyc
+
+#Ignoración de archivos python de máquina virtual
+*.pyc
+__pycache__/
