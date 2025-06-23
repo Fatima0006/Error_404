@@ -9,19 +9,18 @@ def  home(request):
     return render(request, 'home.html')
 def signup(request):
     if request.method == 'GET':
-        print('Enviando formulario')
-        return render(request, 'signup.html', {'form': UserCreationForm()})
-    
-    # POST
-    if request.POST['password1'] == request.POST['password2']:
-        try:
-            user = User.objects.create_user(
-                username=request.POST['username'],
-                password=request.POST['password1']
-            )
-            user.save()
-            return HttpResponse('Usuario creado correctamente')
-        except:
-            return HttpResponse('Usuario ya existente')
+        return render(request, 'signup.html', {"form": UserCreationForm})
     else:
-        return HttpResponse('Las contraseñas no coinciden')
+
+        if request.POST["password1"] == request.POST["password2"]:
+            try:
+                user = User.objects.create_user(
+                    request.POST["username"], password=request.POST["password1"])
+                user.save()
+                
+                return redirect('tasks')
+            except:
+                return render(request, 'signup.html', {"form": UserCreationForm, "error": "Username already exists."})
+
+        return render(request, 'signup.html', {"form": UserCreationForm, "error": "Passwords did not match."})
+

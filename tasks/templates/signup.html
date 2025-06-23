@@ -1,25 +1,10 @@
+<div class="container">
+  <h1>Signup</h1>
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulario de Registro</title>
+  {{error}}
 
-</head>
-<body>
-    <h1>    Inicio de Sesión </h1>
-    <form >
-       
-        {% csrf_token %}
-
-        {{form.as_p}}
-
-        <button >
-            signup
-        </button>
-
-    </form>
-
-</body>
-</html>
+  <form action="/signup/" method="POST">
+    {% csrf_token %} {{form.as_p}}
+    <button class="btn btn-primary">Signup</button>
+  </form>
+</div>

@@ -2,7 +2,25 @@
 --------------------
 Gogo estuvo aqui.
 
-## Requisitos
+## Requisitos del proyecto 
+
+8. Gestor de Asistencia con Check-in y Reportes
+Descripción:
+App para gestionar entradas/salidas de asistentes a eventos.
+Requerimientos funcionales:
+CRUD de eventos y asistentes.
+Registro de entrada/salida (check-in/check-out).
+Reporte de duración por evento y asistente.
+Base de datos sugerida:
+Eventos(id, nombre, fecha)
+Asistentes(id, nombre)
+Registros(id, evento_id, asistente_id, check_in, check_out)
+Reglas de negocio:
+Evitar múltiples check-ins por evento.
+Calcular duración entre entrada y salida.
+Objetivo técnico:
+Evaluar control de tiempos, cálculo de duración y prevención de duplicados.
+
 
 - Python 3.12 (o la versión que uses)
 - pip
@@ -27,6 +45,6 @@ pip install django
 # Corre el programa
 
 python manage.py runserver
-
+python manage.py migrate  # solamente una vez para correr la DB
 
 Esto es un pre-view 
