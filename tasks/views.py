@@ -5,8 +5,11 @@ from django.http import HttpResponse
 
 # Create your views here.
 
-def  home(request):
+
+def home(request):
     return render(request, 'home.html')
+
+
 def signup(request):
     if request.method == 'GET':
         return render(request, 'signup.html', {"form": UserCreationForm})
@@ -17,12 +20,15 @@ def signup(request):
                 user = User.objects.create_user(
                     request.POST["username"], password=request.POST["password1"])
                 user.save()
-                
+
                 return redirect('tasks')
             except:
                 return render(request, 'signup.html', {"form": UserCreationForm, "error": "Username already exists."})
-
         return render(request, 'signup.html', {"form": UserCreationForm, "error": "Passwords did not match."})
 
-def  check_in(request):
+
+def check_in(request):
     return render(request, 'check_in.html')
+
+def tasks(request):
+    return render(request,'tasks.html')
