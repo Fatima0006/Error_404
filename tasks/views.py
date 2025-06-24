@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.db import IntegrityError
 
 # Create your views here.
@@ -33,3 +33,9 @@ def check_in(request):
 
 def tasks(request):
     return render(request,'tasks.html')#a
+
+def signout(request):
+    if request.method == 'POST':
+        logout(request)
+        return redirect('home')
+    return render(request, 'home.html', {"error": "You are not logged in."})
