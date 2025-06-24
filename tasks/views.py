@@ -32,4 +32,4 @@ def check_in(request):
     return render(request, 'check_in.html')
 
 def tasks(request):
-    return render(request,'tasks.html')
+    return render(request,'tasks.html')#a
