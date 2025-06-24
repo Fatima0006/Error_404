@@ -24,3 +24,5 @@ def signup(request):
 
         return render(request, 'signup.html', {"form": UserCreationForm, "error": "Passwords did not match."})
 
+def  check_in(request):
+    return render(request, 'check_in.html')

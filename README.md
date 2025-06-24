@@ -43,8 +43,9 @@ pip install -r requirements.txt -- paso pendiente ( pasa al siguente)
 pip install django
 
 # Corre el programa
-
 python manage.py runserver
 python manage.py migrate  # solamente una vez para correr la DB
 
 Esto es un pre-view 
+
+para apagar venv
