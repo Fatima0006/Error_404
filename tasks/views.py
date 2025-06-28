@@ -65,7 +65,7 @@ def user_profile_view(request, user_id: int):
     # Esta línea intenta obtener el usuario por su ID.
     # Si no lo encuentra, la ejecución se detiene y Django devuelve una página 404.
     # No necesitas un bloque try/except.
-    usuario = get_object_or_404(User, id=user_id)
+    usuario = get_object_or_404(User, id=1)
     
     # Si el código llega hasta aquí, significa que el usuario fue encontrado.
     # Ahora puedes pasar el objeto 'usuario' a tu plantilla HTML.
