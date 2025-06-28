@@ -12,9 +12,10 @@
             <li><a href="{% url 'tasks' %}">Tasks</a></li>
             <li><a href="{% url 'check_in' %}">Check in</a></li>
             {% if user.is_authenticated %}
-                         <li><a href="{% url 'signout'}">Logout</a></li>
+                         <li><a href=/logout>Logout</a></li>
             {% else %}
                         <li><a href="{% url 'signup' %}">Signup</a></li>
+                        <li><a href="{% url 'signin' %}">Login</a></li>
             {%endif %}
         </ul>
 
