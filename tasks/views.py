@@ -52,3 +52,25 @@ def signin(request):
         else:
             login(request, user)
             return redirect('tasks')#
+
+
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.models import User
+
+def user_profile_view(request, user_id: int):
+    """
+    Vista que muestra el perfil de un usuario específico.
+    """
+    # Esta línea intenta obtener el usuario por su ID.
+    # Si no lo encuentra, la ejecución se detiene y Django devuelve una página 404.
+    # No necesitas un bloque try/except.
+    usuario = get_object_or_404(User, id=user_id)
+    
+    # Si el código llega hasta aquí, significa que el usuario fue encontrado.
+    # Ahora puedes pasar el objeto 'usuario' a tu plantilla HTML.
+    context = {
+        'user_profile': usuario
+    }
+    
+    return render(request, 'profiles/user_profile.html', context)

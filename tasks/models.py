@@ -1,5 +1,5 @@
 from django.db import models # Este recuerda dejarlo asi
-
+from django.contrib.auth.models import User # Importa el modelo de usuario de Django
 # Create your models here.
 class Task(models.Model):
     title = models.CharField(max_length=200)
@@ -8,8 +8,7 @@ class Task(models.Model):
     updated = models.DateTimeField(auto_now=True)
     datecompleted = models.BooleanField(default=False)
     important = models.BooleanField(default=False)
-    user = models.ForeignKey(
-        'auth.User',)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tasks')
     
 #    Sepáracion de modelos ------------------------------------------------------------------------------------------------------
 
