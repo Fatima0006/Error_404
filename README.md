@@ -25,6 +25,8 @@ Evaluar control de tiempos, cálculo de duración y prevención de duplicados.
 - Python 3.12 (o la versión que uses)
 - pip
 -django 5.2.3
+
+-- Definir una funcion para traer elementos por ID
 ## Cómo correr este proyecto
 
 ```bash
@@ -49,3 +51,4 @@ python manage.py migrate  # solamente una vez para correr la DB
 Esto es un pre-view 
 
 para apagar venv
+
