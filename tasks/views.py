@@ -53,7 +53,7 @@ def signin(request):
             login(request, user)
             return redirect('tasks')#
 
-
+# -------------- aqui en adelante es es la parte de nuestro ejercicio del profesor ---------------- 
 
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.models import User
