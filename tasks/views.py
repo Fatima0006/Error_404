@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
 from .forms import taskForm
+from .models import Task
 # Aqui va a ser necesario importar el modelo EventForm
 from django.http import HttpResponse
 
@@ -36,7 +37,13 @@ def check_in(request):
 
 
 def tasks(request):
-    return render(request, 'tasks.html')  # a
+    if request.method == 'GET':
+        return render(request, 'tasks.html')  
+    else:
+        try:
+         print(request.POST)
+        except ValueError:
+            return render(request, 'tasks.html', {"error": "There was an error creating the task. Please try again."})
 
 def create_task(request):
     if request.method == 'GET':
