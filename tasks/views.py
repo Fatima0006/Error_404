@@ -3,6 +3,8 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
+from .forms import taskForm
+from django.http import HttpResponse
 
 # Create your views here.
 
@@ -36,9 +38,10 @@ def tasks(request):
     return render(request, 'tasks.html')  # a
 
 def create_task(request):
-    return render(request, 'create_task.html')
+    return render(request, 'create_task.html', {"form": taskForm()})
+
 def create_event(request):
-    return render(request, 'create_event.html')
+    return render(request, 'create_event.html', {"form": taskForm()})
 
 def signout(request):
     logout(request)
