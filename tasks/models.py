@@ -11,8 +11,8 @@ class Task(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tasks')
 
     def __str__(self):
-        return self.title + ' - by ' + self.user.username
-
+        return self.title + ' - by ' + self.user.username  
+    
 
 
 

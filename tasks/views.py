@@ -35,6 +35,10 @@ def check_in(request):
 def tasks(request):
     return render(request, 'tasks.html')  # a
 
+def create_task(request):
+    return render(request, 'create_task.html')
+def create_event(request):
+    return render(request, 'create_event.html')
 
 def signout(request):
     logout(request)
