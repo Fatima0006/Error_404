@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
 from .forms import taskForm
+# Aqui va a ser necesario importar el modelo EventForm
 from django.http import HttpResponse
 
 # Create your views here.
@@ -38,8 +39,24 @@ def tasks(request):
     return render(request, 'tasks.html')  # a
 
 def create_task(request):
-    return render(request, 'create_task.html', {"form": taskForm()})
+    if request.method == 'GET':
+        return render(request, 'create_task.html', {"form": taskForm()})
+    else:
+        try:
+            form = taskForm(request.POST)
+            new_task = form.save(commit=False)
+            new_task.user = request.user
+            print(request.user)
+            print(new_task)
+            print(request.POST)
+            new_task.save()
+            return redirect('tasks')
+        except ValueError:
+            return render(request, 'create_task.html', {"form": taskForm(), "error": "Hubo un"
+            " problema al crear la tarea. ingresa todos los campos. "})
+        
 
+        
 def create_event(request):
     return render(request, 'create_event.html', {"form": taskForm()})
 

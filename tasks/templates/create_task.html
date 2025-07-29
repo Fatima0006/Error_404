@@ -8,6 +8,7 @@
 <h1> Crea tu tarea </h1>
 
 <form method="POST" action="/tasks/create/">
+    {{error}}
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit">Crear Tarea</button>
