@@ -6,10 +6,16 @@ class Task(models.Model):
     description = models.TextField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    datecompleted = models.BooleanField(default=False)
+    datecompleted =models.DateTimeField(null=True, blank=True)
     important = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tasks')
+
+    def __str__(self):
+        return self.title + ' - by ' + self.user.username  
     
+
+
+
 #    Sepáracion de modelos ------------------------------------------------------------------------------------------------------
 
 
