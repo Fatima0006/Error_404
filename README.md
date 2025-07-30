@@ -27,6 +27,12 @@ Evaluar control de tiempos, cálculo de duración y prevención de duplicados.
 -django 5.2.3
 
 -- Definir una funcion para traer elementos por ID
+
+Anotaciones de SEM 
+
+Necesito hacer la relaciones entre eventro y asistentes 
+
+
 ## Cómo correr este proyecto
 
 ```bash
