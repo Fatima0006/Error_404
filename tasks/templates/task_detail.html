@@ -1,9 +1,16 @@
 {% extends "base.html" %}
-{% load static %}
 
-{% block title %}Task_detail{% endblock %}
-
+{% block title %}Detalle de: {{ tasks.title }}{% endblock %}
 
 {% block content %}
+    {# Asumimos que la vista pasa un único objeto llamado 'task' #}
+    <h1>Detalle de: {{ tasks.title }}</h1>
 
-{% endblock content %}
+    <p><strong>Descripción:</strong> {{ tasks.description|default:"Sin descripción." }}</p>
+
+    <p><strong>Fecha de completado:</strong> {{ tasks.datecompleted|date:"d/m/Y"|default:"Aún no completada" }}</p>
+
+    <p><strong>Importante:</strong>
+        {% if tasks.important %}Sí{% else %}No{% endif %}
+    </p>
+{% endblock %}
