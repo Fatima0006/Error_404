@@ -128,3 +128,5 @@ class Registro(models.Model):
                 name='unique_active_checkin_per_event'
             )
         ]
+
+    
