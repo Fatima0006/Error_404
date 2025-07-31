@@ -51,7 +51,9 @@ def create_task(request):
         form = taskForm()
     return render(request, 'create_task.html', {"form": form})
         
-
+def tasks_detail(request, task_id):
+    print(task_id)
+    return render(request, 'tasks_detail.html')
         
 def create_event(request):
     return render(request, 'create_event.html', {"form": taskForm()})
