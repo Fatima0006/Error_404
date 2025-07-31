@@ -1,5 +1,9 @@
 from django.db import models # Este recuerda dejarlo asi
 from django.contrib.auth.models import User # Importa el modelo de usuario de Django
+from django.db.models import Q
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+
 # Create your models here.
 class Task(models.Model):
     title = models.CharField(max_length=200)
@@ -19,9 +23,6 @@ class Task(models.Model):
 #    Sepáracion de modelos ------------------------------------------------------------------------------------------------------
 
 
-from django.db.models import Q
-from django.core.exceptions import ValidationError
-from django.utils import timezone
 
 # --- Modelo de Eventos ---
 # Almacena la información de cada evento.
@@ -39,7 +40,7 @@ class Evento(models.Model):
 
     def __str__(self):
         # Esta representación amigable se usará en el panel de administración de Django.
-        return f"{self.nombre} ({self.fecha.strftime('%d-%m-%Y')})"
+        return f"{self.nombre} ({self.fecha})"
 
     class Meta:
         ordering = ['-fecha'] # Ordena los eventos por fecha, del más reciente al más antiguo.
@@ -68,59 +69,58 @@ class Asistente(models.Model):
 # Es el corazón del sistema, conecta Eventos y Asistentes y controla los tiempos.
 class Registro(models.Model):
     """
-    Registra la asistencia de un Asistente a un Evento, incluyendo
-    las horas de entrada (check-in) y salida (check-out).
+    Registra la asistencia de un Asistente a un Evento,
+    incluyendo horas de entrada (check-in) y salida (check-out).
     """
     evento = models.ForeignKey(
-        Evento, 
-        on_delete=models.CASCADE, 
+        Evento, on_delete=models.CASCADE,
         help_text="Evento al que se registra la asistencia"
     )
     asistente = models.ForeignKey(
-        Asistente, 
-        on_delete=models.CASCADE, 
+        Asistente, on_delete=models.CASCADE,
         help_text="Asistente que realiza el check-in/out"
     )
     check_in = models.DateTimeField(
-        help_text="Fecha y hora exactas en que el asistente entra al evento"
+        null=True, blank=True,
+        help_text="Fecha y hora exactas de entrada al evento"
     )
     check_out = models.DateTimeField(
-        null=True,      # Permite que este campo esté vacío (cuando alguien ha hecho check-in pero no check-out).
-        blank=True,     # Permite que el campo no sea requerido en formularios (como el admin de Django).
-        help_text="Fecha y hora exactas en que el asistente sale del evento. Vacío si aún está dentro."
+        null=True, blank=True,
+        help_text="Fecha y hora exactas de salida del evento (vacío si sigue dentro)"
     )
 
+    # --- Propiedades y validaciones ---
     @property
     def duracion(self):
         """
-        Calcula la duración de la estancia del asistente en el evento.
-        Este es un método @property, por lo que puedes llamarlo como un atributo: registro.duracion
+        Calcula la duración de la estancia del asistente en minutos.
+        Devuelve None si no hay check_out.
         """
         if self.check_in and self.check_out:
-            # Devuelve un objeto `timedelta` que representa la diferencia.
-            return self.check_out - self.check_in
-        return None # Devuelve None si la persona no ha hecho check-out aún.
+            return (self.check_out - self.check_in).total_seconds() / 60
+        return None
 
     def clean(self):
         """
-        Añade validaciones personalizadas que se ejecutan antes de guardar.
+        Validaciones personalizadas que se ejecutan antes de guardar.
         """
-        # Valida que la hora de salida no sea anterior a la de entrada.
         if self.check_in and self.check_out and self.check_out < self.check_in:
-            raise ValidationError("La hora de check-out no puede ser anterior a la hora de check-in.")
+            raise ValidationError("La salida no puede ser antes de la entrada.")
+
+    def save(self, *args, **kwargs):
+        """
+        Sobrescribimos save para asegurarnos de que clean() se ejecute siempre.
+        """
+        self.full_clean()  # Ejecuta validaciones
+        super().save(*args, **kwargs)
 
     def __str__(self):
         estado = "Dentro" if self.check_out is None else "Salió"
         return f"{self.asistente.nombre} en '{self.evento.nombre}' ({estado})"
 
     class Meta:
-        # Ordena los registros por la hora de entrada.
         ordering = ['-check_in']
-        
-        # REGLA DE NEGOCIO: Evitar múltiples check-ins por evento.
-        # Esta restricción a nivel de base de datos asegura que la combinación de
-        # 'evento' y 'asistente' sea única para todos los registros
-        # que AÚN NO tienen un 'check_out'.
+        # Evitar múltiples check-ins activos por evento
         constraints = [
             models.UniqueConstraint(
                 fields=['evento', 'asistente'], 
