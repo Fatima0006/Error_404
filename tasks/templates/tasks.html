@@ -6,4 +6,24 @@
 {% block content %}
 <!DOCTYPE html>
 <h1> Tareas </h1>
+
+{% for Tasks in tasks %}
+    <div class="task">
+        <h2>{{ Tasks.title }}</h2>
+        <p>Description: {{ Tasks.description }}</p>
+        <p>Date complete {{Tasks.datecompleted}}</p>
+        <p>Esta tarea es importante: 
+            {% if Tasks.important %}
+                Sí
+            {% else %}
+                No
+            {% endif %}
+            </p>
+
+      
+    </div>
+{% empty %}
+    <p>No tasks available.</p>
+{% endfor %}
+
 {% endblock %}

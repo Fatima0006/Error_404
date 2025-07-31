@@ -37,30 +37,19 @@ def check_in(request):
 
 
 def tasks(request):
-    if request.method == 'GET':
-        return render(request, 'tasks.html')  
-    else:
-        try:
-         print(request.POST)
-        except ValueError:
-            return render(request, 'tasks.html', {"error": "There was an error creating the task. Please try again."})
-
+    tasks = Task.objects.filter(user=request.user)
+    return render(request, 'tasks.html', {"tasks": tasks})
 def create_task(request):
-    if request.method == 'GET':
-        return render(request, 'create_task.html', {"form": taskForm()})
-    else:
-        try:
-            form = taskForm(request.POST)
+    if request.method == 'POST':
+        form = taskForm(request.POST)
+        if form.is_valid():
             new_task = form.save(commit=False)
             new_task.user = request.user
-            print(request.user)
-            print(new_task)
-            print(request.POST)
             new_task.save()
             return redirect('tasks')
-        except ValueError:
-            return render(request, 'create_task.html', {"form": taskForm(), "error": "Hubo un"
-            " problema al crear la tarea. ingresa todos los campos. "})
+    else: # GET
+        form = taskForm()
+    return render(request, 'create_task.html', {"form": form})
         
 
         

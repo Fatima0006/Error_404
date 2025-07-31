@@ -4,4 +4,4 @@ from .models import Evento, Asistente, Registro,Task
 class taskForm(ModelForm):
     class Meta:
         model = Task
-        fields = ['title', 'description', 'important']
+        fields = ['title', 'description', 'important', 'datecompleted']
