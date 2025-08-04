@@ -4,23 +4,24 @@
 {% block title %}Tasks{% endblock %}
 
 {% block content %}
-<!DOCTYPE html>
 <h1> Tareas </h1>
 
-{% for Tasks in tasks %}
+{% for task in tasks %}
+    <a href="{% url 'task_detail' task.id %}">Ver detalles de la tarea</a>
+    <br>
     <div class="task">
-        <h2>{{ Tasks.title }}</h2>
-        <p>Description: {{ Tasks.description }}</p>
-        <p>Date complete {{Tasks.datecompleted}}</p>
+        <h2>{{ task.title }}</h2>
+        <p>Description: {{ task.description }}</p>
+        {% if task.datecompleted %}
+            <p>Date complete: {{ task.datecompleted|date:"j F Y" }}</p>
+        {% endif %}
         <p>Esta tarea es importante: 
-            {% if Tasks.important %}
+            {% if task.important %}
                 Sí
             {% else %}
                 No
             {% endif %}
-            </p>
-
-      
+        </p>
     </div>
 {% empty %}
     <p>No tasks available.</p>
