@@ -4,8 +4,8 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
-from .forms import taskForm
-from .models import Task
+from .forms import taskForm, RegistroForm, EventForm, AsistenteForm
+from .models import Task, Registro, Evento, Asistente
 # Aqui va a ser necesario importar el modelo EventForm
 from django.http import HttpResponse
 
@@ -62,7 +62,26 @@ def task_detail(request, task_id):
         form = taskForm(request.POST, instance=tasks)
         form.save()
         return redirect('tasks')
-        
+def  complete_task(request, task_id):   
+    task = get_object_or_404(Task, pk=task_id)
+    task.datecompleted = timezone.now()
+    task.save()
+    return redirect('tasks')
+ # -------------Checar esta parte para ver como es que funcionaria BD
+def registrar_asistente(request): 
+    if request.method == 'POST':
+        form = RegistroForm(request.POST)
+        if form.is_valid():
+            # Creamos el objeto pero no lo guardamos aún en la BD
+            nuevo_registro = form.save(commit=False)
+            # Asignamos la fecha y hora actual al check-in
+            nuevo_registro.check_in = timezone.now()
+            nuevo_registro.save()
+            # Redirigimos a alguna página de éxito, por ejemplo, a la lista de tareas
+            return redirect('tasks') 
+    else: # GET
+        form = RegistroForm()
+    return render(request, 'registrar_asistente.html', {'form': form})
         
 def create_event(request):
     return render(request, 'create_event.html', {"form": taskForm()})
