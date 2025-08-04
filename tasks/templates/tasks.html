@@ -7,14 +7,12 @@
 <h1> Tareas </h1>
 
 {% for task in tasks %}
-    <a href="{% url 'task_detail' task.id %}">Ver detalles de la tarea</a>
-    <br>
     <div class="task">
-        <h2>{{ task.title }}</h2>
+        {# Hacemos que el título sea el enlace a los detalles #}
+        <h2><a href="{% url 'task_detail' task.id %}">{{ task.title }}</a></h2>
         <p>Description: {{ task.description }}</p>
-        {% if task.datecompleted %}
-            <p>Date complete: {{ task.datecompleted|date:"j F Y" }}</p>
-        {% endif %}
+        {# Corregimos el nombre del campo a la convención snake_case #}
+        <p>Date complete: {{  task.datecompleted|date:"j F Y"}}</p>
         <p>Esta tarea es importante: 
             {% if task.important %}
                 Sí

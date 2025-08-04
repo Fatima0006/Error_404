@@ -53,8 +53,16 @@ def create_task(request):
     return render(request, 'create_task.html', {"form": form})
         
 def task_detail(request, task_id):
-    tasks = get_object_or_404(Task,pk=task_id)
-    return render(request, 'task_detail.html',{"tasks":tasks})
+    if request.method == 'GET':
+        tasks = get_object_or_404(Task,pk=task_id)
+        form = taskForm(instance=tasks)
+        return render(request, 'task_detail.html',{"tasks":tasks,"form":form})
+    else : 
+        tasks = get_object_or_404(Task,pk=task_id)
+        form = taskForm(request.POST, instance=tasks)
+        form.save()
+        return redirect('tasks')
+        
         
 def create_event(request):
     return render(request, 'create_event.html', {"form": taskForm()})

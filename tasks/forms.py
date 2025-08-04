@@ -5,3 +5,5 @@ class taskForm(ModelForm):
     class Meta:
         model = Task
         fields = ['title', 'description', 'important', 'datecompleted']
+        
+        
