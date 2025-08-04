@@ -37,6 +37,10 @@ class Evento(models.Model):
     fecha = models.DateField(
         help_text="Fecha en que se realiza el evento"
     )
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name='eventos', null=True, blank=True
+    )
 
     def __str__(self):
         # Esta representación amigable se usará en el panel de administración de Django.

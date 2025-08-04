@@ -1,9 +1,12 @@
-
 {% extends "base.html" %}
 
-{% block title %}Tasks{% endblock %}
+{% block title %}Crear Evento{% endblock %}
 
 {% block content %}
-<!DOCTYPE html>
-<h1> Crea tu Evento </h1>
+<h1>Crear un Nuevo Evento</h1>
+<form method="post" class="mt-4">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Guardar Evento</button>
+</form>
 {% endblock %}

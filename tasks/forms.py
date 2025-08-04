@@ -1,5 +1,6 @@
 from django.forms import ModelForm
 from .models import Evento, Asistente, Registro,Task
+from django import forms
 
 class taskForm(ModelForm):
     class Meta:

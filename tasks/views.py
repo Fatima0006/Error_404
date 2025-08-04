@@ -31,10 +31,24 @@ def signup(request):
             except IntegrityError:
                 return render(request, 'signup.html', {"form": UserCreationForm, "error": "Username already exists."})
         return render(request, 'signup.html', {"form": UserCreationForm, "error": "Passwords did not match."})
-
+def eventos(request):
+    eventos= Evento.objects.filter(user=request.user)
+    return render(request, 'eventos.html', {"eventos": eventos})
 
 def check_in(request):
-    return render(request, 'check_in.html')
+    if request.method == 'POST':
+        form = RegistroForm(request.POST)
+        if form.is_valid():
+            # Creamos el objeto pero no lo guardamos aún en la BD
+            nuevo_registro = form.save(commit=False)
+            # Asignamos la fecha y hora actual al check-in
+            nuevo_registro.check_in = timezone.now()
+            nuevo_registro.save()
+            # Redirigimos a alguna página de éxito, por ejemplo, a la lista de tareas
+            return redirect('tasks') 
+    else: # GET
+        form = RegistroForm()
+    return render(request, 'check_in.html', {"form": form})
 
 
 def tasks(request):
@@ -62,6 +76,7 @@ def task_detail(request, task_id):
         form = taskForm(request.POST, instance=tasks)
         form.save()
         return redirect('tasks')
+    
 def  complete_task(request, task_id):   
     task = get_object_or_404(Task, pk=task_id)
     task.datecompleted = timezone.now()
@@ -84,7 +99,16 @@ def registrar_asistente(request):
     return render(request, 'registrar_asistente.html', {'form': form})
         
 def create_event(request):
-    return render(request, 'create_event.html', {"form": taskForm()})
+    if request.method == 'POST':
+        form = EventForm(request.POST)
+        if form.is_valid():
+            new_event = form.save(commit=False)
+            new_event.user = request.user
+            new_event.save()
+            return redirect('eventos')
+    else: # GET
+        form = EventForm()
+    return render(request, 'create_event.html', {"form": form})
 
 def signout(request):
     logout(request)
@@ -115,7 +139,7 @@ def user_profile_view(request, user_id: int):
     # Esta línea intenta obtener el usuario por su ID.
     # Si no lo encuentra, la ejecución se detiene y Django devuelve una página 404.
     # No necesitas un bloque try/except.
-    usuario = get_object_or_404(User, id=1)
+    usuario = get_object_or_404(User, id=user_id)
     
     # Si el código llega hasta aquí, significa que el usuario fue encontrado.
     # Ahora puedes pasar el objeto 'usuario' a tu plantilla HTML.
