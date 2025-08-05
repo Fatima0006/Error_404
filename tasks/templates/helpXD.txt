@@ -117,3 +117,4 @@ urls.py
 Con estos cambios, tendrás un sistema funcional para registrar la entrada (check-in) de un asistente a un evento. El formulario solo pedirá los datos necesarios, y la lógica de tu aplicación se encargará del resto.
 
 Context Sources (12)
+xz
