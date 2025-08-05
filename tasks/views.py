@@ -6,6 +6,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
 from .forms import taskForm, RegistroForm, EventForm, AsistenteForm
 from .models import Task, Registro, Evento, Asistente
+from django.utils import timezone
 # Aqui va a ser necesario importar el modelo EventForm
 from django.http import HttpResponse
 
@@ -18,22 +19,21 @@ def home(request):
 
 def signup(request):
     if request.method == 'GET':
-        return render(request, 'signup.html', {"form": UserCreationForm})
-    else:
+        form = UserCreationForm()
+        return render(request, 'signup.html', {"form": form})
+    else: # POST
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('tasks')
+        else:
+            # El formulario ya contiene los errores, solo hay que volver a mostrarlo
+            return render(request, 'signup.html', {"form": form})
 
-        if request.POST["password1"] == request.POST["password2"]:
-            try:
-                user = User.objects.create_user(
-                    request.POST["username"], password=request.POST["password1"])
-                user.save()
-                login(request, user)
-                return redirect('tasks')
-            except IntegrityError:
-                return render(request, 'signup.html', {"form": UserCreationForm, "error": "Username already exists."})
-        return render(request, 'signup.html', {"form": UserCreationForm, "error": "Passwords did not match."})
 def eventos(request):
-    eventos= Evento.objects.filter(user=request.user)
-    return render(request, 'eventos.html', {"eventos": eventos})
+    eventos_list = Evento.objects.filter(user=request.user)
+    return render(request, 'eventos.html', {"eventos": eventos_list})
 
 def check_in(request):
     if request.method == 'POST':
@@ -112,20 +112,21 @@ def create_event(request):
 
 def signout(request):
     logout(request)
-    return render(request, 'home.html', {"error": "You are not logged in."})
+    return redirect('home')
 
 
 def signin(request):
     if request.method == 'GET':
-        return render(request, 'signin.html', {"form": AuthenticationForm})
-    else:
-        user = authenticate(
-            request, username=request.POST["username"], password=request.POST["password"])
-        if user is None:
-            return render(request, 'signin.html', {"form": AuthenticationForm, "error": "Username or password is incorrect."})
-        else:
+        form = AuthenticationForm()
+        return render(request, 'signin.html', {"form": form})
+    else: # POST
+        form = AuthenticationForm(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
             login(request, user)
-            return redirect('tasks')#
+            return redirect('tasks')
+        else:
+            return render(request, 'signin.html', {"form": form})
 
 # -------------- aqui en adelante es es la parte de nuestro ejercicio del profesor ---------------- 
 
