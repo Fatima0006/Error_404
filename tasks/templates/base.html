@@ -15,9 +15,10 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    
                    {% if user.is_authenticated %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'tasks' %}">Tasks</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'create_task' %}">Create Task</a></li>
+                   {#    <li class="nav-item"><a class="nav-link" href="{% url 'tasks' %}">Tasks</a></li>#}
+                    {#  <li class="nav-item"><a class="nav-link" href="{% url 'create_task' %}">Create Task</a></li>#}  
                         <li class="nav-item"><a class="nav-link" href="{% url 'eventos' %}">Events</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'create_event' %}">Create Event</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'registrar_asistente' %}">Registrar Asistente</a></li>
@@ -33,5 +34,6 @@
     <main class="container mt-4">
         {% block content %}{% endblock %}
     </main>
+
 </body>
 </html>

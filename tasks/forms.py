@@ -15,14 +15,15 @@ class EventForm(ModelForm):
 class AsistenteForm(ModelForm):
     class Meta:
         model = Asistente
-        fields = ['nombre']
+        fields = ['evento', 'nombre']
 
 class RegistroForm(ModelForm):
     class Meta:
-        model = Registro 
+        model = Registro
+
         # Solo pedimos los datos que el usuario debe seleccionar.
         # MODIFICADO: Ya no necesitamos pedir el evento, se obtiene del asistente.
-        fields = ['asistente']
+        fields = ['asistente', 'check_in', 'check_out']
         widgets = {
             'asistente': forms.Select(attrs={'class': 'form-control'}),
         }

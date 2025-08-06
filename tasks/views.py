@@ -95,6 +95,18 @@ def create_event(request):
         form = EventForm()
     return render(request, 'create_event.html', {"form": form})
 
+def crear_asistente(request):
+    if request.method == 'POST':
+        form =AsistenteForm(request.POST)
+        if form.is_valid():
+            new_asistente = form.save(commit=False)
+            new_asistente.user = request.user
+            new_asistente.save()
+            return redirect('crear_asistente')
+    else: # GET
+        form = AsistenteForm()
+    return render(request, 'crear_asistente.html', {"form": form})
+
 def signout(request):
     logout(request)
     return redirect('home')
