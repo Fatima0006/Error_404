@@ -35,21 +35,6 @@ def eventos(request):
     eventos_list = Evento.objects.filter(user=request.user)
     return render(request, 'eventos.html', {"eventos": eventos_list})
 
-def check_in(request):
-    if request.method == 'POST':
-        form = RegistroForm(request.POST)
-        if form.is_valid():
-            # Creamos el objeto pero no lo guardamos aún en la BD
-            nuevo_registro = form.save(commit=False)
-            # Asignamos la fecha y hora actual al check-in
-            nuevo_registro.check_in = timezone.now()
-            nuevo_registro.save()
-            # Redirigimos a alguna página de éxito, por ejemplo, a la lista de tareas
-            return redirect('tasks') 
-    else: # GET
-        form = RegistroForm()
-    return render(request, 'check_in.html', {"form": form})
-
 
 def tasks(request):
     tasks = Task.objects.filter(user=request.user)

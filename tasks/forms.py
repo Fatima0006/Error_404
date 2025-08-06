@@ -21,9 +21,8 @@ class RegistroForm(ModelForm):
     class Meta:
         model = Registro 
         # Solo pedimos los datos que el usuario debe seleccionar.
-        # 'check_in' y 'check_out' se manejarán en la vista.
-        fields = ['evento', 'asistente']
+        # MODIFICADO: Ya no necesitamos pedir el evento, se obtiene del asistente.
+        fields = ['asistente']
         widgets = {
-            'evento': forms.Select(attrs={'class': 'form-control'}),
             'asistente': forms.Select(attrs={'class': 'form-control'}),
         }

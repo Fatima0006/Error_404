@@ -22,7 +22,6 @@ urlpatterns = [
     path ('',views.home, name='home'),
     path ('signup/', views.signup, name='signup'),
     path('eventos/',views.eventos,name='eventos'),
-    path('check_in/',views.check_in,name='check_in'), #esto no se esta utilizando
     path('tasks/',views.tasks,name='tasks'),
     path('tasks/create/',views.create_task,name= 'create_task'),
     path('tasks/<int:task_id>/',views.task_detail,name= 'task_detail'),

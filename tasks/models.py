@@ -58,15 +58,24 @@ class Asistente(models.Model):
     """
     nombre = models.CharField(
         max_length=200, 
-        unique=True, # Evita tener dos asistentes con el mismo nombre.
         help_text="Nombre completo del asistente"
     )
+    #NUEVO: Enlace directo al evento al que pertenece el asistente.
+    # Esto establece la relación "un asistente pertenece a un solo evento".
+    evento = models.ForeignKey(
+            Evento,
+            on_delete=models.CASCADE,
+            related_name='asistentes'
+         )
 
     def __str__(self):
-        return self.nombre
+        # Hacemos más clara la representación, mostrando el evento.
+        return f"{self.nombre} ({self.evento.nombre})"
 
     class Meta:
         ordering = ['nombre'] # Ordena los asistentes alfabéticamente.
+        # NUEVO: Asegura que no haya dos asistentes con el mismo nombre en el MISMO evento.
+        unique_together = ('evento', 'nombre')
 
 
 # --- Modelo de Registros ---
@@ -76,10 +85,6 @@ class Registro(models.Model):
     Registra la asistencia de un Asistente a un Evento,
     incluyendo horas de entrada (check-in) y salida (check-out).
     """
-    evento = models.ForeignKey(
-        Evento, on_delete=models.CASCADE,
-        help_text="Evento al que se registra la asistencia"
-    )
     asistente = models.ForeignKey(
         Asistente, on_delete=models.CASCADE,
         help_text="Asistente que realiza el check-in/out"
@@ -94,6 +99,14 @@ class Registro(models.Model):
     )
 
     # --- Propiedades y validaciones ---
+    @property
+    def evento(self):
+        """
+        Propiedad para acceder fácilmente al evento del asistente.
+        Permite que el resto del código siga usando `registro.evento`.
+        """
+        return self.asistente.evento
+
     @property
     def duracion(self):
         """
@@ -120,16 +133,18 @@ class Registro(models.Model):
 
     def __str__(self):
         estado = "Dentro" if self.check_out is None else "Salió"
+        # Accedemos al evento a través de la nueva propiedad
         return f"{self.asistente.nombre} en '{self.evento.nombre}' ({estado})"
 
     class Meta:
         ordering = ['-check_in']
-        # Evitar múltiples check-ins activos por evento
+        # Evitar múltiples check-ins activos por asistente
         constraints = [
             models.UniqueConstraint(
-                fields=['evento', 'asistente'], 
+                # MODIFICADO: La unicidad ahora es solo por asistente.
+                fields=['asistente'],
                 condition=Q(check_out__isnull=True),
-                name='unique_active_checkin_per_event'
+                name='unique_active_checkin_per_assistant'
             )
         ]
 
