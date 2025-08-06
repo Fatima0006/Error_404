@@ -78,7 +78,7 @@ def registrar_asistente(request):
             nuevo_registro.check_in = timezone.now()
             nuevo_registro.save()
             # Redirigimos a alguna página de éxito, por ejemplo, a la lista de tareas
-            return redirect('tasks') 
+            return redirect('registrar_asistente') 
     else: # GET
         form = RegistroForm()
     return render(request, 'registrar_asistente.html', {'form': form})
