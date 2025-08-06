@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mt-5">Detalles del Evento</h1>
+    <div class="card mt-4">
+        <div class="card-header">
+            <h2>{{ evento.nombre }}</h2>
+        </div>
+        <div class="card-body">
+            <p class="card-text"><strong>Fecha:</strong> {{ evento.fecha }}</p>
+            <p class="card-text"><strong>Asistentes registrados:</strong> {{ asistentes_count }}</p>
+            
+            <hr>
+
+            <h4>Lista de Asistentes</h4>
+            {% if asistentes %}
+                <ul class="list-group mb-4">
+                    {% for asistente in asistentes %}
+                        <li class="list-group-item">{{ asistente.nombre }}</li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">Aún no hay asistentes registrados.</p>
+            {% endif %}
+
+            <h3>Modificar Evento</h3>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    {{ form.nombre.label_tag }}
+                    {{ form.nombre }}
+                </div>
+                <div class="mb-3">
+                    {{ form.fecha.label_tag }}
+                    {{ form.fecha }}
+                </div>
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            </form>
+        </div>
+        <div class="card-footer text-muted">
+            <a href="{% url 'eventos' %}" class="btn btn-secondary">Volver a la lista</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

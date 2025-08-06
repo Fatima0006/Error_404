@@ -146,3 +146,32 @@ def user_profile_view(request, user_id: int):
     }
     
     return render(request, 'profiles/user_profile.html', context)
+
+# --- Nueva vista para el detalle del evento ---
+def evento_detail(request, evento_id):
+    # Busca el evento o devuelve un error 404 si no existe.
+    evento = get_object_or_404(Evento, pk=evento_id)
+    
+    # Obtenemos la lista de asistentes y luego la contamos.
+    asistentes = evento.asistentes.all()
+    asistentes_count = asistentes.count()
+
+    if request.method == 'POST':
+        # Si el formulario se envió, lo procesamos.
+        form = EventForm(request.POST, instance=evento)
+        if form.is_valid():
+            form.save()
+            return redirect('eventos') # Redirige a la lista de eventos.
+    else:
+        # Si es una petición GET, mostramos el formulario con los datos del evento.
+        form = EventForm(instance=evento)
+
+    # Preparamos el contexto para la plantilla.
+    context = {
+        'evento': evento,
+        'form': form,
+        'asistentes_count': asistentes_count,
+        'asistentes': asistentes  # ¡Esta es la línea que faltaba!
+    }
+    
+    return render(request, 'evento_detail.html', context)

@@ -6,11 +6,17 @@ class taskForm(ModelForm):
     class Meta:
         model = Task
         fields = ['title', 'description', 'important', 'datecompleted']
+        widgets = {
+            'datecompleted': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+        }
 
 class EventForm(ModelForm):
     class Meta:
         model = Evento
         fields = ['nombre', 'fecha']
+        widgets = {
+            'fecha': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+        }
 
 class AsistenteForm(ModelForm):
     class Meta:
@@ -26,4 +32,6 @@ class RegistroForm(ModelForm):
         fields = ['asistente', 'check_in', 'check_out']
         widgets = {
             'asistente': forms.Select(attrs={'class': 'form-control'}),
+            'check_in': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+            'check_out': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
         }
