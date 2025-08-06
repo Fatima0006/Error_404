@@ -121,7 +121,7 @@ def signin(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect('tasks')
+            return redirect('home')
         else:
             return render(request, 'signin.html', {"form": form})
 

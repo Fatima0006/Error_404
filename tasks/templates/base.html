@@ -18,9 +18,9 @@
                     
                    {% if user.is_authenticated %}
                    {#    <li class="nav-item"><a class="nav-link" href="{% url 'tasks' %}">Tasks</a></li>#}
-                    {#  <li class="nav-item"><a class="nav-link" href="{% url 'create_task' %}">Create Task</a></li>#}  
-                        <li class="nav-item"><a class="nav-link" href="{% url 'eventos' %}">Events</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'create_event' %}">Create Event</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'eventos' %}">Eventos </a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'create_event' %}">Crear Evento</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'crear_asistente' %}">Crear Asistente</a></li>                       
                         <li class="nav-item"><a class="nav-link" href="{% url 'registrar_asistente' %}">Registrar Asistente</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
                     {% else %}
