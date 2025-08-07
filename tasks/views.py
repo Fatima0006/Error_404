@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
-from .forms import taskForm, RegistroForm, EventForm, AsistenteForm
+from .forms import taskForm, EventForm, AsistenteForm, KioscoAsistenciaForm
 from .models import Task, Registro, Evento, Asistente
 from django.utils import timezone
 # Aqui va a ser necesario importar el modelo EventForm
@@ -68,20 +68,80 @@ def  complete_task(request, task_id):
     task.save()
     return redirect('tasks')
  # -------------Checar esta parte para ver como es que funcionaria BD
-def registrar_asistente(request): 
+
+
+def evento_detail(request, evento_id):
+    # Busca el evento o devuelve un error 404 si no existe.
+    evento = get_object_or_404(Evento, pk=evento_id)
+
+    # Obtenemos la lista de asistentes y luego la contamos.
+    asistentes = evento.asistentes.all()
+    asistentes_count = asistentes.count()
+
     if request.method == 'POST':
-        form = RegistroForm(request.POST)
+        # Si el formulario se envió, lo procesamos.
+        form = EventForm(request.POST, instance=evento)
         if form.is_valid():
-            # Creamos el objeto pero no lo guardamos aún en la BD
-            nuevo_registro = form.save(commit=False)
-            # Asignamos la fecha y hora actual al check-in
-            nuevo_registro.check_in = timezone.now()
-            nuevo_registro.save()
-            # Redirigimos a alguna página de éxito, por ejemplo, a la lista de tareas
-            return redirect('registrar_asistente') 
+            form.save()
+            return redirect('eventos')  # Redirige a la lista de eventos.
+    else:
+        # Si es una petición GET, mostramos el formulario con los datos del evento.
+        form = EventForm(instance=evento)
+
+    # Preparamos el contexto para la plantilla.
+    context = {
+        'evento': evento,
+        'form': form,
+        'asistentes_count': asistentes_count,
+        'asistentes': asistentes  # ¡Esta es la línea que faltaba!
+    }
+
+    return render(request, 'evento_detail.html', context)
+
+def kiosco_asistencia(request, evento_id):
+    evento = get_object_or_404(Evento, pk=evento_id)
+    
+    if request.method == 'POST':
+        form = KioscoAsistenciaForm(request.POST, evento=evento)
+        if form.is_valid():
+            asistente_seleccionado = form.cleaned_data['asistente']
+            
+            # 1. Buscar si hay un check-in abierto para este asistente
+            registro_abierto = Registro.objects.filter(
+                asistente=asistente_seleccionado,
+                check_out__isnull=True
+            ).first() # .first() devuelve el objeto o None
+            
+            if registro_abierto:
+                # 2. Si existe, lo cerramos (hacemos check-out)
+                registro_abierto.check_out = timezone.now()
+                registro_abierto.save()
+            else:
+                # 3. Si no existe, creamos uno nuevo (hacemos check-in)
+                Registro.objects.create(
+                    asistente=asistente_seleccionado,
+                    check_in=timezone.now()
+                )
+            # Redirigimos a la misma página para ver el resultado
+            return redirect('kiosco_asistencia', evento_id=evento.id)
     else: # GET
-        form = RegistroForm()
-    return render(request, 'registrar_asistente.html', {'form': form})
+        form = KioscoAsistenciaForm(evento=evento)
+
+    # 4. Preparamos la información para la tabla de estado
+    asistentes_con_estado = []
+    for asistente in evento.asistentes.all():
+        ultimo_registro = Registro.objects.filter(asistente=asistente).order_by('-check_in').first()
+        asistentes_con_estado.append({
+            'asistente': asistente,
+            'registro': ultimo_registro
+        })
+
+    context = {
+        'evento': evento,
+        'form': form,
+        'asistentes_con_estado': asistentes_con_estado
+    }
+    return render(request, 'registrar_asistente.html', context)
         
 def create_event(request):
     if request.method == 'POST':
@@ -97,14 +157,22 @@ def create_event(request):
 
 def crear_asistente(request):
     if request.method == 'POST':
-        form =AsistenteForm(request.POST)
+        form = AsistenteForm(request.POST)
         if form.is_valid():
-            new_asistente = form.save(commit=False)
-            new_asistente.user = request.user
-            new_asistente.save()
-            return redirect('crear_asistente')
+            try:
+                # La línea `new_asistente.user = request.user` se elimina
+                # porque el modelo Asistente no tiene un campo `user`.
+                # La relación con el usuario está en el Evento.
+                form.save()
+                # Redirigimos a la misma página para que pueda añadir otro asistente.
+                return redirect('crear_asistente')
+            except IntegrityError:
+                # Si se produce un IntegrityError, es por la restricción `unique_together`.
+                # Añadimos un error general al formulario para mostrarlo en la plantilla.
+                form.add_error(None, 'Error: Ya existe un asistente con este nombre para este evento.')
     else: # GET
         form = AsistenteForm()
+    # Renderizamos la plantilla con el formulario (ya sea nuevo o con el error).
     return render(request, 'crear_asistente.html', {"form": form})
 
 def signout(request):
@@ -148,30 +216,3 @@ def user_profile_view(request, user_id: int):
     return render(request, 'profiles/user_profile.html', context)
 
 # --- Nueva vista para el detalle del evento ---
-def evento_detail(request, evento_id):
-    # Busca el evento o devuelve un error 404 si no existe.
-    evento = get_object_or_404(Evento, pk=evento_id)
-    
-    # Obtenemos la lista de asistentes y luego la contamos.
-    asistentes = evento.asistentes.all()
-    asistentes_count = asistentes.count()
-
-    if request.method == 'POST':
-        # Si el formulario se envió, lo procesamos.
-        form = EventForm(request.POST, instance=evento)
-        if form.is_valid():
-            form.save()
-            return redirect('eventos') # Redirige a la lista de eventos.
-    else:
-        # Si es una petición GET, mostramos el formulario con los datos del evento.
-        form = EventForm(instance=evento)
-
-    # Preparamos el contexto para la plantilla.
-    context = {
-        'evento': evento,
-        'form': form,
-        'asistentes_count': asistentes_count,
-        'asistentes': asistentes  # ¡Esta es la línea que faltaba!
-    }
-    
-    return render(request, 'evento_detail.html', context)

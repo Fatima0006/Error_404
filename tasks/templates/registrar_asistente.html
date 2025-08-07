@@ -1,12 +1,78 @@
-{% extends "base.html" %}
-
-{% block title %}Registrar Asistencia{% endblock %}
+{% extends 'base.html' %}
 
 {% block content %}
-    <h1>Registrar Asistencia a Evento</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-success">Registrar Entrada</button>
-    </form>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            
+            <h1 class="text-center mb-4">Kiosco de Asistencia: {{ evento.nombre }}</h1>
+            
+            <!-- Formulario de Check-in/Check-out -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Registrar Entrada / Salida</h5>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            {{ form.as_p }}
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Procesar Registro</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tabla de Estado de Asistentes -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Estado de Asistentes</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Nombre del Asistente</th>
+                                <th>Estado</th>
+                                <th>Última Entrada</th>
+                                <th>Última Salida</th>
+                                <th>Duración (min)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in asistentes_con_estado %}
+                                <tr>
+                                    <td>{{ item.asistente.nombre }}</td>
+                                    <td>
+                                        {% if item.registro and item.registro.check_out is None %}
+                                            <span class="badge bg-success">Dentro</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Fuera</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.registro.check_in|date:"d/m/Y H:i"|default:"--" }}</td>
+                                    <td>{{ item.registro.check_out|date:"d/m/Y H:i"|default:"--" }}</td>
+                                    <td>
+                                        {% if item.registro.duracion is not None %}
+                                            {{ item.registro.duracion|floatformat:0 }}
+                                        {% else %}
+                                            --
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No hay asistentes registrados para este evento.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="{% url 'evento_detail' evento.id %}" class="btn btn-secondary">Volver al Detalle del Evento</a>
+            </div>
+
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -35,3 +35,22 @@ class RegistroForm(ModelForm):
             'check_in': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
             'check_out': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
         }
+
+class KioscoAsistenciaForm(forms.Form):
+    """
+    Formulario para el kiosco de check-in/check-out.
+    Solo necesita un campo para seleccionar al asistente.
+    """
+    asistente = forms.ModelChoiceField(
+        queryset=Asistente.objects.none(), # Inicialmente vacío
+        label="Seleccionar Asistente",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+    def __init__(self, *args, **kwargs):
+        # Sacamos el evento de los argumentos para usarlo en el queryset
+        evento = kwargs.pop('evento', None)
+        super().__init__(*args, **kwargs)
+        if evento:
+            # Filtramos el queryset para mostrar solo los asistentes de este evento
+            self.fields['asistente'].queryset = evento.asistentes.all()
