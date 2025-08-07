@@ -21,7 +21,7 @@ class EventForm(ModelForm):
 class AsistenteForm(ModelForm):
     class Meta:
         model = Asistente
-        fields = ['evento', 'nombre']
+        fields = ['nombre']
 
 class RegistroForm(ModelForm):
     class Meta:

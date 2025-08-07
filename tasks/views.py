@@ -70,32 +70,34 @@ def  complete_task(request, task_id):
  # -------------Checar esta parte para ver como es que funcionaria BD
 
 
-def evento_detail(request, evento_id):
-    # Busca el evento o devuelve un error 404 si no existe.
-    evento = get_object_or_404(Evento, pk=evento_id)
+from django.forms import modelformset_factory
 
-    # Obtenemos la lista de asistentes y luego la contamos.
-    asistentes = evento.asistentes.all()
-    asistentes_count = asistentes.count()
+def evento_detail(request, evento_id):
+    evento = get_object_or_404(Evento, pk=evento_id)
+    
+    # 1. Crear el Formset para los Asistentes
+    AsistenteFormSet = modelformset_factory(Asistente, form=AsistenteForm, extra=0, can_delete=True)
 
     if request.method == 'POST':
-        # Si el formulario se envió, lo procesamos.
-        form = EventForm(request.POST, instance=evento)
-        if form.is_valid():
+        # 2. Procesar ambos formularios
+        form = EventForm(request.POST, instance=evento, prefix='evento')
+        formset = AsistenteFormSet(request.POST, queryset=evento.asistentes.all(), prefix='asistentes')
+        
+        if form.is_valid() and formset.is_valid():
             form.save()
-            return redirect('eventos')  # Redirige a la lista de eventos.
-    else:
-        # Si es una petición GET, mostramos el formulario con los datos del evento.
-        form = EventForm(instance=evento)
+            formset.save()
+            return redirect('evento_detail', evento_id=evento.id)
 
-    # Preparamos el contexto para la plantilla.
+    else: # GET
+        # 3. Mostrar ambos formularios
+        form = EventForm(instance=evento, prefix='evento')
+        formset = AsistenteFormSet(queryset=evento.asistentes.all(), prefix='asistentes')
+
     context = {
         'evento': evento,
         'form': form,
-        'asistentes_count': asistentes_count,
-        'asistentes': asistentes  # ¡Esta es la línea que faltaba!
+        'formset': formset,
     }
-
     return render(request, 'evento_detail.html', context)
 
 def kiosco_asistencia(request, evento_id):
@@ -106,18 +108,25 @@ def kiosco_asistencia(request, evento_id):
         if form.is_valid():
             asistente_seleccionado = form.cleaned_data['asistente']
             
-            # 1. Buscar si hay un check-in abierto para este asistente
-            registro_abierto = Registro.objects.filter(
+            # 1. Buscar si hay un registro (check-in o check-out) para este asistente EN ESTE evento
+            registro_existente = Registro.objects.filter(
                 asistente=asistente_seleccionado,
-                check_out__isnull=True
-            ).first() # .first() devuelve el objeto o None
-            
-            if registro_abierto:
-                # 2. Si existe, lo cerramos (hacemos check-out)
-                registro_abierto.check_out = timezone.now()
-                registro_abierto.save()
+                asistente__evento=evento 
+            ).first()
+
+            if registro_existente:
+                # Si ya existe un registro, verificamos si está abierto o cerrado
+                if registro_existente.check_out is None:
+                    # Si está abierto (solo check-in), lo cerramos (hacemos check-out)
+                    registro_existente.check_out = timezone.now()
+                    registro_existente.save()
+                else:
+                    # Si ya tiene check-out, significa que ya completó su asistencia.
+                    # Opcional: Puedes mostrar un mensaje de error o simplemente no hacer nada.
+                    # Por ahora, no haremos nada para evitar registros duplicados.
+                    pass # El asistente ya ha sido registrado y ha salido.
             else:
-                # 3. Si no existe, creamos uno nuevo (hacemos check-in)
+                # 3. Si no existe ningún registro para este asistente en este evento, creamos uno nuevo (hacemos check-in)
                 Registro.objects.create(
                     asistente=asistente_seleccionado,
                     check_in=timezone.now()
