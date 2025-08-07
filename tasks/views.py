@@ -75,8 +75,8 @@ from django.forms import modelformset_factory
 def evento_detail(request, evento_id):
     evento = get_object_or_404(Evento, pk=evento_id)
     
-    # 1. Crear el Formset para los Asistentes
-    AsistenteFormSet = modelformset_factory(Asistente, form=AsistenteForm, extra=0, can_delete=True)
+    # 1. Crear el Formset para los Asistentes, ahora con un campo extra para añadir.
+    AsistenteFormSet = modelformset_factory(Asistente, form=AsistenteForm, extra=1, can_delete=True)
 
     if request.method == 'POST':
         # 2. Procesar ambos formularios
@@ -85,7 +85,17 @@ def evento_detail(request, evento_id):
         
         if form.is_valid() and formset.is_valid():
             form.save()
-            formset.save()
+            
+            # Procesar el formset para asociar nuevos asistentes con el evento
+            instances = formset.save(commit=False)
+            for instance in instances:
+                instance.evento = evento  # Asignar el evento actual
+                instance.save()
+            
+            # Manejar la eliminación
+            for obj in formset.deleted_objects:
+                obj.delete()
+
             return redirect('evento_detail', evento_id=evento.id)
 
     else: # GET
