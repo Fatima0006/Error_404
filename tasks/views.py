@@ -102,7 +102,8 @@ def evento_detail(request, evento_id):
                 return redirect('evento_detail', evento_id=evento.id)
 
             except IntegrityError:
-                messages.error(request, "Error: Ya existe un asistente con este nombre para este evento.")
+                messages.error(request, "Error: Ya existe un asistente con este nombre para este evento." \
+                " Registra otra persona")
 
     else: # GET
         # 3. Mostrar ambos formularios
