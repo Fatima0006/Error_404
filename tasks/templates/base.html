@@ -1,38 +1,71 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Event Manager{% endblock %}</title>
+    <title>{% block title %}Gestor de Eventos{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">App</a>
+            <a class="navbar-brand fw-bold" href="{% url 'home' %}">
+                <i class="bi bi-calendar-check"></i>
+                EventManager
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    
                    {% if user.is_authenticated %}
-                   {#    <li class="nav-item"><a class="nav-link" href="{% url 'tasks' %}">Tasks</a></li>#}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'eventos' %}">Eventos </a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'eventos' %}">Mis Eventos</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'create_event' %}">Crear Evento</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'crear_asistente' %}">Crear Asistente</a></li>                       
-                        <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle"></i> {{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">Cerrar Sesión</a></li>
+                            </ul>
+                        </li>
                     {% else %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'signin' %}">Login</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'signup' %}">Sign Up</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'signin' %}">Iniciar Sesión</a></li>
+                        <li class="nav-item"><a class="btn btn-primary" href="{% url 'signup' %}">Registrarse</a></li>
                     {% endif %}
                 </ul>
             </div>
         </div>
     </nav>
-    <main class="container mt-4">
-        {% block content %}{% endblock %}
+
+    <main class="container my-5">
+        <div class="card shadow-sm p-4">
+            {% block content %}{% endblock %}
+        </div>
     </main>
 
+    <footer class="bg-light text-center text-lg-start mt-auto py-3">
+        <div class="text-center">
+           
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

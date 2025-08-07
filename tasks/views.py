@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
@@ -26,7 +27,7 @@ def signup(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('tasks')
+            return redirect('eventos')
         else:
             # El formulario ya contiene los errores, solo hay que volver a mostrarlo
             return render(request, 'signup.html', {"form": form})
@@ -87,16 +88,21 @@ def evento_detail(request, evento_id):
             form.save()
             
             # Procesar el formset para asociar nuevos asistentes con el evento
-            instances = formset.save(commit=False)
-            for instance in instances:
-                instance.evento = evento  # Asignar el evento actual
-                instance.save()
-            
-            # Manejar la eliminación
-            for obj in formset.deleted_objects:
-                obj.delete()
+            try:
+                instances = formset.save(commit=False)
+                for instance in instances:
+                    instance.evento = evento  # Asignar el evento actual
+                    instance.save()
+                
+                # Manejar la eliminación
+                for obj in formset.deleted_objects:
+                    obj.delete()
 
-            return redirect('evento_detail', evento_id=evento.id)
+                messages.success(request, "¡Cambios guardados exitosamente!")
+                return redirect('evento_detail', evento_id=evento.id)
+
+            except IntegrityError:
+                messages.error(request, "Error: Ya existe un asistente con este nombre para este evento.")
 
     else: # GET
         # 3. Mostrar ambos formularios
@@ -234,4 +240,12 @@ def user_profile_view(request, user_id: int):
     
     return render(request, 'profiles/user_profile.html', context)
 
+def delete_event(request, evento_id):
+    if request.method == 'POST':
+        # Busca el evento asegurándose de que le pertenece al usuario logueado
+        evento = get_object_or_404(Evento, pk=evento_id, user=request.user)
+        # Elimina el evento de la base de datos
+        evento.delete()
+    # Redirige a la lista de eventos
+    return redirect('eventos')
 # --- Nueva vista para el detalle del evento ---

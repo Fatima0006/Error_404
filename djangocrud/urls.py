@@ -32,4 +32,5 @@ urlpatterns = [
     path('event/create/',views.create_event,name='create_event'),
     path('logout/',views.signout,name='logout'),
     path('signin/',views.signin,name='signin'),
+    path('eventos/<int:evento_id>/delete/', views.delete_event, name='delete_event'),
 ]
