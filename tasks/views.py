@@ -5,7 +5,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
-from .forms import taskForm, EventForm, AsistenteForm, KioscoAsistenciaForm
+from .forms import taskForm, EventForm, AsistenteForm, KioscoAsistenciaForm, Asistente
 from .models import Task, Registro, Evento, Asistente
 from django.utils import timezone
 # Aqui va a ser necesario importar el modelo EventForm
@@ -32,39 +32,46 @@ def signup(request):
             # El formulario ya contiene los errores, solo hay que volver a mostrarlo
             return render(request, 'signup.html', {"form": form})
 
+@login_required
 def eventos(request):
     eventos_list = Evento.objects.filter(user=request.user)
     return render(request, 'eventos.html', {"eventos": eventos_list})
 
 
+@login_required
 def tasks(request):
     tasks = Task.objects.filter(user=request.user)
     return render(request, 'tasks.html', {"tasks": tasks})
+
+@login_required
 def create_task(request):
     if request.method == 'POST':
         form = taskForm(request.POST)
         if form.is_valid():
             new_task = form.save(commit=False)
-            new_task.user = request.user
+            new_task.user = request.user # Se asocia la tarea al usuario logueado
             new_task.save()
             return redirect('tasks')
     else: # GET
         form = taskForm()
     return render(request, 'create_task.html', {"form": form})
-        
+
+@login_required
 def task_detail(request, task_id):
+    # Se añade 'user=request.user' para asegurar que el usuario solo puede ver sus propias tareas.
+    task = get_object_or_404(Task, pk=task_id, user=request.user)
     if request.method == 'GET':
-        tasks = get_object_or_404(Task,pk=task_id)
-        form = taskForm(instance=tasks)
-        return render(request, 'task_detail.html',{"tasks":tasks,"form":form})
+        form = taskForm(instance=task)
+        return render(request, 'task_detail.html', {"tasks": task, "form": form})
     else : 
-        tasks = get_object_or_404(Task,pk=task_id)
-        form = taskForm(request.POST, instance=tasks)
+        form = taskForm(request.POST, instance=task)
         form.save()
         return redirect('tasks')
-    
-def  complete_task(request, task_id):   
-    task = get_object_or_404(Task, pk=task_id)
+
+@login_required
+def complete_task(request, task_id):
+    # Se añade 'user=request.user' para asegurar que el usuario solo puede completar sus propias tareas.
+    task = get_object_or_404(Task, pk=task_id, user=request.user)
     task.datecompleted = timezone.now()
     task.save()
     return redirect('tasks')
@@ -73,14 +80,15 @@ def  complete_task(request, task_id):
 
 from django.forms import modelformset_factory
 
+@login_required
 def evento_detail(request, evento_id):
-    evento = get_object_or_404(Evento, pk=evento_id)
+    # Se añade 'user=request.user' para asegurar que el usuario solo puede ver sus propios eventos.
+    evento = get_object_or_404(Evento, pk=evento_id, user=request.user)
     
     # 1. Crear el Formset para los Asistentes, ahora con un campo extra para añadir.
     AsistenteFormSet = modelformset_factory(Asistente, form=AsistenteForm, extra=1, can_delete=True)
 
     if request.method == 'POST':
-        # 2. Procesar ambos formularios
         form = EventForm(request.POST, instance=evento, prefix='evento')
         formset = AsistenteFormSet(request.POST, queryset=evento.asistentes.all(), prefix='asistentes')
         
@@ -106,7 +114,6 @@ def evento_detail(request, evento_id):
                 " Registra otra persona")
 
     else: # GET
-        # 3. Mostrar ambos formularios
         form = EventForm(instance=evento, prefix='evento')
         formset = AsistenteFormSet(queryset=evento.asistentes.all(), prefix='asistentes')
 
@@ -117,58 +124,70 @@ def evento_detail(request, evento_id):
     }
     return render(request, 'evento_detail.html', context)
 
+@login_required
 def kiosco_asistencia(request, evento_id):
-    evento = get_object_or_404(Evento, pk=evento_id)
+    # Se añade 'user=request.user' para asegurar que el usuario solo puede gestionar sus propios eventos.
+    evento = get_object_or_404(Evento, pk=evento_id, user=request.user)
     
     if request.method == 'POST':
         form = KioscoAsistenciaForm(request.POST, evento=evento)
         if form.is_valid():
             asistente_seleccionado = form.cleaned_data['asistente']
             
-            # 1. Buscar si hay un registro (check-in o check-out) para este asistente EN ESTE evento
-            registro_existente = Registro.objects.filter(
+            # Lógica mejorada: Buscar un registro ACTIVO (sin check-out) para este asistente.
+            # Esto permite que un asistente pueda salir y volver a entrar.
+            registro_activo = Registro.objects.filter(
                 asistente=asistente_seleccionado,
-                asistente__evento=evento 
+                check_out__isnull=True
             ).first()
 
-            if registro_existente:
-                # Si ya existe un registro, verificamos si está abierto o cerrado
-                if registro_existente.check_out is None:
-                    # Si está abierto (solo check-in), lo cerramos (hacemos check-out)
-                    registro_existente.check_out = timezone.now()
-                    registro_existente.save()
-                else:
-                    # Si ya tiene check-out, significa que ya completó su asistencia.
-                    # Opcional: Puedes mostrar un mensaje de error o simplemente no hacer nada.
-                    # Por ahora, no haremos nada para evitar registros duplicados.
-                    pass # El asistente ya ha sido registrado y ha salido.
+            if registro_activo:
+                # Si está dentro, hacemos check-out.
+                registro_activo.check_out = timezone.now()
+                registro_activo.save()
+                messages.success(request, f"Se registró la SALIDA de {asistente_seleccionado.nombre}.")
             else:
-                # 3. Si no existe ningún registro para este asistente en este evento, creamos uno nuevo (hacemos check-in)
+                # Si está fuera (o es su primera vez), hacemos un nuevo check-in.
                 Registro.objects.create(
                     asistente=asistente_seleccionado,
                     check_in=timezone.now()
                 )
+                messages.success(request, f"Se registró la ENTRADA de {asistente_seleccionado.nombre}.")
+
             # Redirigimos a la misma página para ver el resultado
             return redirect('kiosco_asistencia', evento_id=evento.id)
     else: # GET
         form = KioscoAsistenciaForm(evento=evento)
 
-    # 4. Preparamos la información para la tabla de estado
+    # 4. Preparamos la información para la tabla de estado (forma optimizada para evitar N+1 queries)
+    asistentes_del_evento = evento.asistentes.all()
+    # Obtenemos todos los registros de los asistentes de este evento en una sola consulta
+    todos_los_registros = Registro.objects.filter(
+        asistente__in=asistentes_del_evento
+    ).order_by('asistente_id', '-check_in')
+
+    # Creamos un diccionario para guardar solo el último registro de cada asistente
+    ultimo_registro_por_asistente = {}
+    for registro in todos_los_registros:
+        if registro.asistente_id not in ultimo_registro_por_asistente:
+            ultimo_registro_por_asistente[registro.asistente_id] = registro
+
+    # Construimos la lista final para la plantilla
     asistentes_con_estado = []
-    for asistente in evento.asistentes.all():
-        ultimo_registro = Registro.objects.filter(asistente=asistente).order_by('-check_in').first()
+    for asistente in asistentes_del_evento:
         asistentes_con_estado.append({
             'asistente': asistente,
-            'registro': ultimo_registro
+            'registro': ultimo_registro_por_asistente.get(asistente.id)
         })
 
     context = {
         'evento': evento,
         'form': form,
-        'asistentes_con_estado': asistentes_con_estado
+        'asistentes_con_estado': asistentes_con_estado,
     }
     return render(request, 'registrar_asistente.html', context)
         
+@login_required
 def create_event(request):
     if request.method == 'POST':
         form = EventForm(request.POST)
@@ -181,25 +200,6 @@ def create_event(request):
         form = EventForm()
     return render(request, 'create_event.html', {"form": form})
 
-def crear_asistente(request):
-    if request.method == 'POST':
-        form = AsistenteForm(request.POST)
-        if form.is_valid():
-            try:
-                # La línea `new_asistente.user = request.user` se elimina
-                # porque el modelo Asistente no tiene un campo `user`.
-                # La relación con el usuario está en el Evento.
-                form.save()
-                # Redirigimos a la misma página para que pueda añadir otro asistente.
-                return redirect('crear_asistente')
-            except IntegrityError:
-                # Si se produce un IntegrityError, es por la restricción `unique_together`.
-                # Añadimos un error general al formulario para mostrarlo en la plantilla.
-                form.add_error(None, 'Error: Ya existe un asistente con este nombre para este evento.')
-    else: # GET
-        form = AsistenteForm()
-    # Renderizamos la plantilla con el formulario (ya sea nuevo o con el error).
-    return render(request, 'crear_asistente.html', {"form": form})
 
 def signout(request):
     logout(request)
@@ -215,7 +215,8 @@ def signin(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect('home')
+            # Redirigimos a la lista de eventos para una mejor experiencia de usuario.
+            return redirect('eventos')
         else:
             return render(request, 'signin.html', {"form": form})
 
@@ -241,12 +242,14 @@ def user_profile_view(request, user_id: int):
     
     return render(request, 'profiles/user_profile.html', context)
 
+@login_required
 def delete_event(request, evento_id):
     if request.method == 'POST':
         # Busca el evento asegurándose de que le pertenece al usuario logueado
         evento = get_object_or_404(Evento, pk=evento_id, user=request.user)
         # Elimina el evento de la base de datos
         evento.delete()
+        messages.success(request, f"El evento '{evento.nombre}' ha sido eliminado.")
     # Redirige a la lista de eventos
     return redirect('eventos')
 # --- Nueva vista para el detalle del evento ---
