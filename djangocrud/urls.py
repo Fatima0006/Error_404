@@ -27,9 +27,9 @@ urlpatterns = [
     path('tasks/create/',views.create_task,name= 'create_task'),
     path('tasks/<int:task_id>/',views.task_detail,name= 'task_detail'),
     # URL para el nuevo formulario de registro de asistencia
-    path('asistencia/registrar/', views.registrar_asistente, name='registrar_asistente'),
-    path('asistencia/crear/',views.crear_asistente,name= 'crear_asistente'),
+    path('evento/<int:evento_id>/asistencia/', views.kiosco_asistencia, name='kiosco_asistencia'),
     path('event/create/',views.create_event,name='create_event'),
     path('logout/',views.signout,name='logout'),
     path('signin/',views.signin,name='signin'),
+    path('eventos/<int:evento_id>/delete/', views.delete_event, name='delete_event'),
 ]

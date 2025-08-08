@@ -11,9 +11,18 @@
 <ul class="list-group">
     {% for evento in eventos %}
         <li class="list-group-item d-flex justify-content-between align-items-center">
-            <h3><a href="{% url 'evento_detail' evento.id %}">{{ evento.nombre }}</a></h3>
-            
-            <span class="badge bg-secondary rounded-pill">{{ evento.fecha|date:"M d, Y" }}</span>
+            <div>
+                <h3>{{ evento.nombre }}</h3>
+                <span class="badge bg-secondary rounded-pill">{{ evento.fecha|date:"M d, Y" }}</span>
+            </div>
+            <div>
+                <a href="{% url 'kiosco_asistencia' evento.id %}" class="btn btn-success btn-sm">Registro</a>
+                <form action="{% url 'delete_event' evento.id %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <a href="{% url 'evento_detail' evento.id %}" class="btn btn-success btn-sm">Detalles</a>
+                    <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                </form>
+            </div>
         </li>
     {% empty %}
         <li class="list-group-item">Aún no tienes eventos.</li>
