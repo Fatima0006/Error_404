@@ -141,18 +141,27 @@ def kiosco_asistencia(request, evento_id):
                 check_out__isnull=True
             ).first()
 
+
             if registro_activo:
                 # Si está dentro, hacemos check-out.
                 registro_activo.check_out = timezone.now()
                 registro_activo.save()
                 messages.success(request, f"Se registró la SALIDA de {asistente_seleccionado.nombre}.")
             else:
-                # Si está fuera (o es su primera vez), hacemos un nuevo check-in.
-                Registro.objects.create(
-                    asistente=asistente_seleccionado,
-                    check_in=timezone.now()
-                )
-                messages.success(request, f"Se registró la ENTRADA de {asistente_seleccionado.nombre}.")
+                # Buscar si ya existe algún registro anterior (ya hizo check-out)
+                registro_anterior = Registro.objects.filter(
+                    asistente=asistente_seleccionado
+                ).exclude(check_out__isnull=True).exists()
+                if registro_anterior:
+                    # Si ya hizo check-out antes, NO permitir re-entrada
+                    messages.error(request, f"{asistente_seleccionado.nombre} ya registró su salida y no puede volver a entrar a este evento.")
+                else:
+                    # Si es su primera vez, hacemos un nuevo check-in.
+                    Registro.objects.create(
+                        asistente=asistente_seleccionado,
+                        check_in=timezone.now()
+                    )
+                    messages.success(request, f"Se registró la ENTRADA de {asistente_seleccionado.nombre}.")
 
             # Redirigimos a la misma página para ver el resultado
             return redirect('kiosco_asistencia', evento_id=evento.id)
